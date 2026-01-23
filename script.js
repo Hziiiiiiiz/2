@@ -15,8 +15,9 @@ document.getElementById('formulaForm').addEventListener('submit', async (e) => {
         return;
     }
 
-    // 3. UI 状态重置
+    // 3. UI 状态重置：显示加载中，禁用提交按钮
     status.textContent = '⏳ 正在渲染动画...（可能需要 10-60 秒）';
+    status.className = 'loading'; // 使用 CSS 中的 loading 样式
     result.innerHTML = '';
     submitBtn.disabled = true;
 
@@ -30,7 +31,7 @@ document.getElementById('formulaForm').addEventListener('submit', async (e) => {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',
-                // 关键：跳过 ngrok 免费版的警告页面
+                // 重要：跳过 ngrok 免费版的浏览器警告页面，否则 fetch 会报错
                 'ngrok-skip-browser-warning': 'true' 
             },
             body: JSON.stringify({ 
@@ -45,36 +46,41 @@ document.getElementById('formulaForm').addEventListener('submit', async (e) => {
         
         if (res.ok) {
             status.textContent = '✅ 渲染完成！';
+            status.className = ''; // 移除加载样式
             
-            // 6. 构造视频地址
-            // 后端返回的 data.video_url 已经是 "/video/文件名.mp4"
+            // 6. 构造视频和下载地址
+            // 后端返回的 data.video_url 包含 "/video/" 前缀，直接拼接 API_BASE
             const videoFullUrl = `${API_BASE}${data.video_url}`;
             const downloadFullUrl = `${API_BASE}${data.download_url}`;
 
-            // 7. 渲染播放器
+            // 7. 渲染播放器和下载按钮
+            // 加入 playsinline 和 autoplay 提升移动端体验
             result.innerHTML = `
-                <div class="video-container" style="margin-top: 20px;">
-                    <video controls autoplay playsinline style="width: 100%; border-radius: 8px; background: #000;">
+                <div class="video-container" style="margin-top: 20px; text-align: center;">
+                    <video controls autoplay playsinline style="width: 100%; max-width: 700px; border-radius: 8px; background: #000; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
                         <source src="${videoFullUrl}" type="video/mp4">
-                        您的浏览器不支持视频播放。
+                        您的浏览器不支持视频播放，请点击下方按钮下载查看。
                     </video>
                 </div>
-                <div style="margin-top: 15px; text-align: center;">
+                <div style="margin-top: 20px; text-align: center;">
                     <a href="${downloadFullUrl}" 
                        target="_blank" 
                        download 
-                       style="padding: 10px 20px; background: #28a745; color: white; text-decoration: none; border-radius: 5px; display: inline-block;">
-                       📥 下载生成的视频
+                       style="padding: 12px 24px; background: #28a745; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block; transition: background 0.3s;">
+                       📥 下载生成的 MP4 视频
                     </a>
                 </div>
             `;
         } else {
-            throw new Error(data.error || '后端处理出错');
+            // 如果后端返回 400 或 500 错误
+            throw new Error(data.error || '服务器内部错误');
         }
     } catch (err) {
         console.error('Fetch Error:', err);
-        status.textContent = '❌ 错误: ' + (err.message || '连接服务器失败');
+        status.textContent = '❌ 错误: ' + (err.message || '无法连接到后端服务器');
+        status.className = ''; 
     } finally {
+        // 无论成功失败，恢复按钮点击
         submitBtn.disabled = false;
     }
 });
