@@ -18,7 +18,7 @@ document.getElementById('formulaForm').addEventListener('submit', async (e) => {
 
   try {
     // 👇 修改这里：指向你的公网 API 地址
-    const API_BASE = 'https://ladyless-enviably-jim.ngrok-free.dev/'; // ← 替换为你的真实服务器地址
+    const API_BASE = 'https://ladyless-enviably-jim.ngrok-free.dev'; // ← 替换为你的真实服务器地址
 
     const res = await fetch(`${API_BASE}/api/render`, {
       method: 'POST',
