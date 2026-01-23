@@ -22,7 +22,10 @@ document.getElementById('formulaForm').addEventListener('submit', async (e) => {
 
     const res = await fetch(`${API_BASE}/api/render`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+    'Content-Type': 'application/json',
+    'ngrok-skip-browser-warning': 'true' // ← 添加这一行绕过警告页
+  },
       body: JSON.stringify({ 
         num1: parseInt(num1), 
         num2: parseInt(num2), 
